@@ -1,0 +1,130 @@
+// Copyright 2010-2013 Intel Corporation.
+//
+// This library is free software; you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, version 2.1.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// Disclaimer: The codes contained in these modules may be specific
+// to the Intel Software Development Platform codenamed Knights Ferry,
+// and the Intel product codenamed Knights Corner, and are not backward
+// compatible with other Intel products. Additionally, Intel will NOT
+// support the codes or instruction set in future products.
+//
+// Intel offers no warranty of any kind regarding the code. This code is
+// licensed on an "AS IS" basis and Intel is not obligated to provide
+// any support, assistance, installation, training, or other services
+// of any kind. Intel is also not obligated to provide any updates,
+// enhancements or extensions. Intel specifically disclaims any warranty
+// of merchantability, non-infringement, fitness for any particular
+// purpose, and any other warranty.
+//
+// Further, Intel disclaims all liability of any kind, including but
+// not limited to liability for infringement of any proprietary rights,
+// relating to the use of the code, even if Intel is notified of the
+// possibility of such liability. Except as expressly stated in an Intel
+// license agreement provided with this code and agreed upon with Intel,
+// no license, express or implied, by estoppel or otherwise, to any
+// intellectual property rights is granted herein.
+SCIF_REGISTER_PINNED_PAGES(9)
+=============================
+:doctype: manpage
+
+NAME
+----
+scif_register_pinned_pages - Mark a memory region for remote access.
+
+SYNOPSIS
+--------
+*#include <scif.h>*
+
+*off_t
+scif_register_pinned_pages(
+       scif_epd_t* 'epd'*,
+    scif_pinned_pages_t* 'pinned_pages'*,
+    off_t* 'offset'*,
+    int* 'map_flags'*);*
+
+DESCRIPTION
+-----------
+The *scif_register_pinned_pages*() function opens a window, a range of whole
+pages of the registered address space of the endpoint 'epd', starting at
+offset 'po'. The value of 'po', further described below, is a function of the
+parameters 'offset' and 'pinned_pages', and the value of 'map_flags'. Each page of
+the window represents a corresponding physical memory page of the range
+represented by 'pinned_pages'; the length of the window is the same as the
+length of range represented by 'pinned_pages'. A successful *scif_register_pinned_pages*()
+call returns 'po' as the return value.
+
+When *SCIF_MAP_FIXED* is set in the 'map_flags' argument, 'po' will be offset
+exactly, and offset is constrained to be a multiple of the page size. The
+mapping established by *scif_register*() will not replace any existing
+registration; an error is returned if any page of the new window would
+intersect an existing window.
+
+When *SCIF_MAP_FIXED* is not set, the implementation uses offset in an
+implementation-defined manner to arrive at 'po'. The 'po' so chosen will be an
+area of the registered address space that the implementation deems suitable
+for a mapping of the required size. An 'offset' value of 0 is interpreted as
+granting the implementation complete freedom in selecting 'po', subject to
+constraints described below. A non-zero value of 'offset' is taken to be a
+suggestion of an offset near which the mapping should be placed. When the
+implementation selects a value for 'po', it does not replace any extant
+window. In all cases, 'po' will be a multiple of the page size.
+
+The physical pages which are so represented by a window are available for
+access in calls to *scif_get_pages*(), *scif_readfrom*(), *scif_writeto*(),
+*scif_vreadfrom*(), and *scif_vwriteto*(). While a window is registered, the
+physical pages represented by the window will not be reused by the memory
+subsytem for any other purpose. Note that the same physical page may be
+represented by multiple windows.
+
+Windows created by *scif_register_pinned_pages*() are unregistered by
+*scif_unregister*().
+
+The 'map_flags' argument is formed by OR'ing together zero or more of the
+following values:
+
+*SCIF_MAP_FIXED*::
+    interpret 'offset' exactly
+
+RETURN VALUE
+------------
+Upon successful completion, *scif_register_pinned_pages*() returns the offset
+at which the mapping was placed ('po'); otherwise the negative of one of the
+following errors is returned.
+
+ERRORS
+------
+*EADDRINUSE*::
+ SCIF_MAP_FIXED is set in 'map_flags' and pages in the new
+  window would intersect an existing window.
+*EAGAIN*::
+ The mapping could not be performed due to lack of resources.
+*ECONNRESET*::
+ A connection was forcibly closed by a peer.
+*EINVAL*::
+ 'epd' is not a valid endpoint descriptor, or
+ 'map_flags' is invalid, or
+ SCIF_MAP_FIXED is set in 'map_flags', and 'offset' is not a
+  multiple of the page size, or
+ 'offset' is negative.
+*ENODEV*::
+ The remote node is lost.
+*ENOMEM*::
+ Not enough space.
+*ENOTCONN*::
+ The endpoint is not connected.
+
+NOTES
+-----
+*scif_pin_pages*() is only available in the kernel mode SCIF library.
+
+SEE ALSO
+--------
+*scif_pin_pages*(3), *scif_unpin_pages*(3), *<scif.h>
+

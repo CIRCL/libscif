@@ -1,0 +1,113 @@
+// Copyright 2010-2013 Intel Corporation.
+//
+// This library is free software; you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, version 2.1.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// Disclaimer: The codes contained in these modules may be specific
+// to the Intel Software Development Platform codenamed Knights Ferry,
+// and the Intel product codenamed Knights Corner, and are not backward
+// compatible with other Intel products. Additionally, Intel will NOT
+// support the codes or instruction set in future products.
+//
+// Intel offers no warranty of any kind regarding the code. This code is
+// licensed on an "AS IS" basis and Intel is not obligated to provide
+// any support, assistance, installation, training, or other services
+// of any kind. Intel is also not obligated to provide any updates,
+// enhancements or extensions. Intel specifically disclaims any warranty
+// of merchantability, non-infringement, fitness for any particular
+// purpose, and any other warranty.
+//
+// Further, Intel disclaims all liability of any kind, including but
+// not limited to liability for infringement of any proprietary rights,
+// relating to the use of the code, even if Intel is notified of the
+// possibility of such liability. Except as expressly stated in an Intel
+// license agreement provided with this code and agreed upon with Intel,
+// no license, express or implied, by estoppel or otherwise, to any
+// intellectual property rights is granted herein.
+SCIF_PIN_PAGES(9)
+=================
+:doctype: manpage
+
+NAME
+----
+scif_pin_pages - Pin a set of pages.
+
+SYNOPSIS
+--------
+*#include <scif.h>*
+
+*int
+scif_pin_pages(	void* \*'addr'*, size_t* 'len'*, int* 'prot_flags'*,
+    int* 'map_flags'*, scif_pinned_pages_t* \*'pinned_pages'*);*
+
+DESCRIPTION
+-----------
+*scif_pin_pages*() pins (locks in physical memory) the physical pages which
+back the range of virtual address pages starting at 'addr' and continuing for
+'len' bytes. 'addr' and 'len' are constrained to be multiples of the page size. A
+successful *scif_register*() call returns an opaque pointer value at
+'pinned_pages' which may be used in subsequent calls to
+*scif_register_pinned_pages*().
+
+The pages will remain pinned as long as there is a reference against the
+scif_pinned_pages_t value returned by *scif_pin_pages*() and until
+*scif_unpin_pages*() is called, passing the 'scif_pinned_pages_t' value. A
+reference is added to a 'scif_pinned_pages_t' value each time a window is
+created by calling *scif_register_pinned_pages*() and passing the
+'scif_pinned_pages_t' value. A reference is removed from a 'scif_pinned_pages_t' value
+each time such a window is deleted.
+
+Subsequent operations which change the memory pages to which virtual
+addresses are mapped (such as *mmap*(), *munmap*(), *scif_mmap*() and
+*scif_munmap*()) have no effect on the 'scif_pinned_pages_t' value or windows
+created against it.
+
+On Linux, if the process will *fork*(), it is recommended that the registered
+virtual address range be marked with *MADV_DONTFORK*. Doing so will prevent
+problems due to copy-on-write semantics.
+
+The 'prot_flags' argument is formed by OR'ing together one or more of the
+following values:
+
+*SCIF_PROT_READ*::
+    allow read operations against the pages
+*SCIF_PROT_WRITE*::
+    allow write operations against the pages
+
+The 'map_flags' argument is formed by OR'ing together zero or more of the
+following values:
+
+*SCIF_MAP_KERNEL*::
+    interpret 'addr' as a kernel space address. By default, 'addr'
+    is interpreted as a user space address.
+
+RETURN VALUE
+------------
+Upon successful completion, *scif_pin_pages*() returns 0; otherwise the
+negative of one of the following errors is returned.
+
+ERRORS
+------
+*EFAULT*::
+ Addresses in the range ['addr','addr'+'len'-1] are invalid.
+*EINVAL*::
+ 'prot_flags' is invalid,
+ 'map_flags' is invalid, or
+ 'offset' is negative.
+*ENOMEM*::
+ Not enough space.
+
+NOTES
+-----
+*scif_pin_pages*() is only available in the kernel mode SCIF library.
+
+SEE ALSO
+--------
+*scif_unpin_pages*(3), *scif_register_pinned_pages*(3), *<scif.h>*
+

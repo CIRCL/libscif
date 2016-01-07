@@ -1,0 +1,78 @@
+// Copyright 2010-2013 Intel Corporation.
+//
+// This library is free software; you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, version 2.1.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// Disclaimer: The codes contained in these modules may be specific
+// to the Intel Software Development Platform codenamed Knights Ferry,
+// and the Intel product codenamed Knights Corner, and are not backward
+// compatible with other Intel products. Additionally, Intel will NOT
+// support the codes or instruction set in future products.
+//
+// Intel offers no warranty of any kind regarding the code. This code is
+// licensed on an "AS IS" basis and Intel is not obligated to provide
+// any support, assistance, installation, training, or other services
+// of any kind. Intel is also not obligated to provide any updates,
+// enhancements or extensions. Intel specifically disclaims any warranty
+// of merchantability, non-infringement, fitness for any particular
+// purpose, and any other warranty.
+//
+// Further, Intel disclaims all liability of any kind, including but
+// not limited to liability for infringement of any proprietary rights,
+// relating to the use of the code, even if Intel is notified of the
+// possibility of such liability. Except as expressly stated in an Intel
+// license agreement provided with this code and agreed upon with Intel,
+// no license, express or implied, by estoppel or otherwise, to any
+// intellectual property rights is granted herein.
+SCIF_UNPIN_PAGES(9)
+===================
+:doctype: manpage
+
+NAME
+----
+scif_unpin_pages - Unpin a set of pages.
+
+SYNOPSIS
+--------
+*#include <scif.h>*
+
+*int
+scif_unpin_pages(
+       scif_pinned_pages_t* 'pinned_pages'*);*
+
+DESCRIPTION
+-----------
+*scif_unpin_pages*() prevents *scif_register_pinned_pages*() from registering new
+windows against 'pinned_pages'. The physical pages represented by 'pinned_pages'
+will remain pinned until all windows previously registered against
+'pinned_pages' are deleted (the window is *scif_unregister*()'d and all
+references to the window are removed (see *scif_unregister*()).
+
+'pinned_pages' must have been obtain from a previous call to scif_pin_pages().
+After calling *scif_unpin_pages*(), it is an error to pass 'pinned_pages' to
+*scif_register_pinned_pages*().
+
+RETURN VALUE
+------------
+Upon successful completion, *scif_unpin_pages*() returns 0; otherwise the
+negative of one of the following errors is returned.
+
+ERRORS
+------
+*EINVAL*::
+ 'pinned_pages' is not valid
+
+NOTES
+-----
+*scif_pin_pages*() is only available in the kernel mode SCIF library.
+
+SEE ALSO
+--------
+*scif_pin_pages*(3), *scif_register_pinned_pages*(3), *<scif.h>
+

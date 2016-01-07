@@ -1,0 +1,119 @@
+// Copyright 2010-2013 Intel Corporation.
+//
+// This library is free software; you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, version 2.1.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// Disclaimer: The codes contained in these modules may be specific
+// to the Intel Software Development Platform codenamed Knights Ferry,
+// and the Intel product codenamed Knights Corner, and are not backward
+// compatible with other Intel products. Additionally, Intel will NOT
+// support the codes or instruction set in future products.
+//
+// Intel offers no warranty of any kind regarding the code. This code is
+// licensed on an "AS IS" basis and Intel is not obligated to provide
+// any support, assistance, installation, training, or other services
+// of any kind. Intel is also not obligated to provide any updates,
+// enhancements or extensions. Intel specifically disclaims any warranty
+// of merchantability, non-infringement, fitness for any particular
+// purpose, and any other warranty.
+//
+// Further, Intel disclaims all liability of any kind, including but
+// not limited to liability for infringement of any proprietary rights,
+// relating to the use of the code, even if Intel is notified of the
+// possibility of such liability. Except as expressly stated in an Intel
+// license agreement provided with this code and agreed upon with Intel,
+// no license, express or implied, by estoppel or otherwise, to any
+// intellectual property rights is granted herein.
+ifdef::scif_user[SCIF_FENCE_SIGNAL(3)]
+ifndef::scif_user[SCIF_FENCE_SIGNAL(9)]
+====================
+:doctype: manpage
+
+NAME
+----
+scif_fence_signal - Request a signal on completion of RMAs.
+
+SYNOPSIS
+--------
+*#include <scif.h>*
+
+int scif_fence_signal(scif_epd_t 'epd', off_t 'loff', uint64_t 'lval', off_t 'roff',
+uint64_t 'rval', int 'flags');
+
+DESCRIPTION
+-----------
+*scif_fence_signal*() returns after marking the current set of all uncompleted
+RMAs initiated through the endpoint 'epd' or marking the current set of all
+uncompleted RMAs initiated through the peer of endpoint 'epd'.
+
+If 'flags' includes *SCIF_SIGNAL_LOCAL*, then on completion of the RMAs in the
+marked set, 'lval' is written to memory at the address corresponding to offset
+'loff' in the local registered address space of 'epd'. 'loff' must be within a
+registered window. If 'flags' includes *SCIF_SIGNAL_REMOTE*, then on completion
+of the RMAs in the marked set, 'rval' is written to memory at the address
+corresponding to offset 'roff' in the remote registered address space of 'epd'.
+'roff' must be within a remote registered window of the peer of 'epd'. Note
+that any specified offset must be DWORD (4 byte / 32 bit) aligned.
+
+The 'flags' argument is formed by OR'ing together the following exactly one of the following values:
+
+ *SCIF_FENCE_INIT_SELF*::
+    RMA operations initiated through endpoint 'epd' are marked
+ *SCIF_FENCE_INIT_PEER*::
+    RMA operations initiated through the peer of endpoint 'epd' are marked
+
+and one or more of the following values:
+
+ *SCIF_SIGNAL_LOCAL*::
+    On completion of the marked set of RMAs, write 'lval' to
+    memory at the address corresponding to offset 'loff' in the local registered
+    address space of 'epd'.
+ *SCIF_SIGNAL_REMOTE*::
+    On completion of the marked set of RMAs, write 'lval' to
+    memory at the address corresponding to offset 'roff' in the remote registered
+    address space of 'epd'.
+
+RETURN VALUE
+------------
+Upon successful completion, *scif_fence_signal*() returns 0; otherwise: in
+user mode -1 is returned and errno is set to indicate the error; in kernel
+mode the negative of one of the following errors is returned.
+
+ERRORS
+------
+*EBADF*::
+ 'epd' is not a valid endpoint descriptor.
+*ECONNRESET*::
+ A connection was forcibly closed by a peer.
+*EINVAL*::
+ 'epd' is not a valid endpoint descriptor, or
+ 'flags' is invalid, or
+ 'loff' or 'roff' are not DWORD aligned.
+*ENODEV*::
+ The remote node is lost.
+*ENOTCONN*::
+ The endpoint is not connected.
+*ENOTTY*::
+ 'epd' is not a valid endpoint descriptor.
+*ENXIO*::
+ 'loff' is invalid for the registered address of 'epd', or
+ 'roff' is invalid for the registered address space, of the peer of 'epd'.
+
+EXAMPLE
+-------
+None
+
+NOTES
+-----
+*scif_fence_signal*() is available in both the user mode and kernel mode SCIF libraries.
+
+SEE ALSO
+--------
+*scif_readfrom*(3), *scif_writeto*(3), *scif_vreadfrom*(3), *scif_vwriteto*(3), *scif_fence_mark*(3), *scif_fence_wait*(3), *<scif.h>*
+

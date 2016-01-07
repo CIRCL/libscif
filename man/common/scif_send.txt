@@ -1,0 +1,125 @@
+// Copyright 2010-2013 Intel Corporation.
+//
+// This library is free software; you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, version 2.1.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// Disclaimer: The codes contained in these modules may be specific
+// to the Intel Software Development Platform codenamed Knights Ferry,
+// and the Intel product codenamed Knights Corner, and are not backward
+// compatible with other Intel products. Additionally, Intel will NOT
+// support the codes or instruction set in future products.
+//
+// Intel offers no warranty of any kind regarding the code. This code is
+// licensed on an "AS IS" basis and Intel is not obligated to provide
+// any support, assistance, installation, training, or other services
+// of any kind. Intel is also not obligated to provide any updates,
+// enhancements or extensions. Intel specifically disclaims any warranty
+// of merchantability, non-infringement, fitness for any particular
+// purpose, and any other warranty.
+//
+// Further, Intel disclaims all liability of any kind, including but
+// not limited to liability for infringement of any proprietary rights,
+// relating to the use of the code, even if Intel is notified of the
+// possibility of such liability. Except as expressly stated in an Intel
+// license agreement provided with this code and agreed upon with Intel,
+// no license, express or implied, by estoppel or otherwise, to any
+// intellectual property rights is granted herein.
+ifdef::scif_user[SCIF_SEND(3)]
+ifndef::scif_user[SCIF_SEND(9)]
+============
+:doctype: manpage
+
+NAME
+----
+scif_send - Send a message.
+
+SYNOPSIS
+--------
+*#include <scif.h>*
+
+*int scif_send(scif_epd_t* 'epd'*, void* \*'msg'*, int len, int flags);*
+
+DESCRIPTION
+-----------
+*scif_send*() sends data to the peer of endpoint 'epd'. Up to 'len' bytes of data
+are copied from memory starting at address 'msg'. On successful execution the
+return value of *scif_send*() is the number of bytes that were sent and is
+zero if no bytes were sent because 'len' was zero. *scif_send*() may be called
+only when the endpoint is in a connected state.
+
+If a *scif_send*() call is non-blocking, then it sends only those bytes which
+can be sent without waiting, up to a maximum of 'len' bytes.
+
+If a *scif_send*() call is blocking, then it normally returns after sending
+all 'len' bytes. If a blocking call is interrupted or the connection is
+forcibly closed, the call is considered successful if some bytes were sent
+or 'len' is zero, otherwise the call is considered unsuccessful.
+
+On Linux in user mode, the *select*() and *poll*() functions can be used to
+determine when the send queue is not full. On Microsoft Windows* and on
+Linux in kernel mode, the *scif_poll*() function may be used for this purpose.
+
+It is recommended that *scif_send*()/*scif_recv*() only be used for short
+control-type message communication between SCIF endpoints. The SCIF RMA
+APIs are expected to provide better performance for transfer sizes of
+1024 bytes or longer.
+
+The 'flags' argument is formed by ORing together zero or more of the following
+values:
+
+*SCIF_SEND_BLOCK*::
+
+    Block until the entire message is sent.
+
+RETURN VALUE
+------------
+Upon successful completion, *scif_send*() returns the number of bytes sent;
+otherwise: in user mode -1 is returned and errno is set to indicate the
+error; in kernel mode the negative of one of the following errors is
+returned.
+
+ERRORS
+------
+*EBADF*::
+ 'epd' is not a valid endpoint descriptor.
+
+*ECONNRESET*::
+ A connection was forcibly closed by a peer.
+
+*EFAULT*::
+ An invalid address was specified for a parameter.
+
+*EINTR*::
+ 'epd' was closed by *scif_close*().
+
+*EINVAL*::
+ 'epd' is not a valid endpoint descriptor, or
+ 'flags' is invalid, or
+ 'len' is negative.
+
+*ENODEV*::
+ The remote node is lost.
+
+*ENOMEM*::
+ Not enough space.
+
+*ENOTCONN*::
+ The endpoint is not connected.
+
+*ENOTTY*::
+ 'epd' is not a valid endpoint descriptor.
+
+NOTES
+-----
+*scif_send*() is available in both the user mode and kernel mode SCIF libraries.
+
+SEE ALSO
+--------
+*scif_recv*(), *scif_poll*(3), *poll*(2), *select*(2), *<scif.h>*
+

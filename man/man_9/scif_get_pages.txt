@@ -1,0 +1,104 @@
+// Copyright 2010-2013 Intel Corporation.
+//
+// This library is free software; you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, version 2.1.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// Disclaimer: The codes contained in these modules may be specific
+// to the Intel Software Development Platform codenamed Knights Ferry,
+// and the Intel product codenamed Knights Corner, and are not backward
+// compatible with other Intel products. Additionally, Intel will NOT
+// support the codes or instruction set in future products.
+//
+// Intel offers no warranty of any kind regarding the code. This code is
+// licensed on an "AS IS" basis and Intel is not obligated to provide
+// any support, assistance, installation, training, or other services
+// of any kind. Intel is also not obligated to provide any updates,
+// enhancements or extensions. Intel specifically disclaims any warranty
+// of merchantability, non-infringement, fitness for any particular
+// purpose, and any other warranty.
+//
+// Further, Intel disclaims all liability of any kind, including but
+// not limited to liability for infringement of any proprietary rights,
+// relating to the use of the code, even if Intel is notified of the
+// possibility of such liability. Except as expressly stated in an Intel
+// license agreement provided with this code and agreed upon with Intel,
+// no license, express or implied, by estoppel or otherwise, to any
+// intellectual property rights is granted herein.
+SCIF_GET_PAGES(9)
+=================
+:doctype: manpage
+
+NAME
+----
+scif_get_pages - Add references to remote registered pages.
+
+SYNOPSIS
+--------
+*#include <scif.h>*
+
+*int scif_get_pages(
+       scif_epd_t* 'epd'*,
+       off_t* 'offset'*,
+       size_t* 'len'*,
+       struct scif_range* \*\*'pages'*);*
+
+DESCRIPTION
+-----------
+*scif_get_pages*() returns the addresses of the physical pages represented by
+those pages of the registered address space of the peer of 'epd', starting at
+'offset' and continuing for 'len' bytes. 'offset' and 'len' are constrained to be
+multiples of the page size.
+
+All of the pages in the specified range ['offset','offset'+'len'-1] must be within
+a single window of the registered address space of the peer of 'epd'.
+
+The addresses are returned as a virtually contiguous array pointed to by the
+*phys_addr* component of the 'scif_range' structure whose address is returned in
+'pages'. The 'nr_pages' component of 'scif_range' is the length of the array. The
+'prot_flags' component of 'scif_range' holds the protection flag value passed
+when the pages were registered.
+
+Each physical page whose address is returned by *scif_get_pages*() remains
+available and will not be released for reuse until the scif_range structure
+is returned in a call to *scif_put_pages*(). The scif_range structure returned
+by *scif_get_pages*() must be unmodified.
+
+It is an error to call *scif_close*() on an endpoint on which a scif_range
+structure of that endpoint has not been returned to *scif_put_pages*().
+
+RETURN VALUE
+------------
+Upon successful completion, *scif_get_pages*() returns 0; otherwise the
+negative of one of the following errors is returned.
+
+ERRORS
+------
+*ECONNRESET*::
+ A connection was forcibly closed by a peer.
+*EINVAL*::
+ 'epd' is not a valid endpoint descriptor, or
+ 'offset' is not a multiple of the page size, or
+ 'offset' is negative, or
+ 'len' is not a multiple of the page size.
+*ENODEV*::
+The remote node is lost.
+*ENOTCONN*::
+ The endpoint is not connected.
+*ENXIO*::
+ Addresses in the range ['offset','offset'+'len'-1] are invalid
+  for the registered address space of the peer 'epd'.
+
+NOTES
+-----
+*scif_get_pages*() is only available in the kernel mode SCIF library.
+
+SEE ALSO
+--------
+*scif_put_pages*(3), *<scif.h>*
+
