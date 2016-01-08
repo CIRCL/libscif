@@ -79,7 +79,7 @@ libscif_all := libscif.so.$(libscif_major).$(libscif_minor)
 all: $(libscif_dev) docs
 
 libscif.map: libscif.cfg scif_api.c
-	gen-symver-map $< $@ -- $(filter-out $<, $^) -- $(CC) $(ALL_CFLAGS)
+	./gen-symver-map $< $@ -- $(filter-out $<, $^) -- $(CC) $(ALL_CFLAGS)
 
 $(libscif_dev): scif_api.c libscif.map
 	$(CC) $(ALL_CFLAGS) -fpic -shared $< $(MPSS_METADATA_BRAND) -o $@ \
