@@ -76,7 +76,7 @@ libscif_all := libscif.so.$(libscif_major).$(libscif_minor)
 
 .PHONY: all lib pdf install install-pdf docs
 
-all: $(libscif_dev) docs
+all: $(libscif_dev)
 
 libscif.map: libscif.cfg scif_api.c
 	./gen-symver-map $< $@ -- $(filter-out $<, $^) -- $(CC) $(ALL_CFLAGS)
@@ -110,10 +110,6 @@ install:
 	ln -s $(libscif_all) $(DESTDIR)$(libdir)/$(libscif_dev)
 	$(INSTALL_d) $(DESTDIR)$(includedir)
 	$(INSTALL_f) scif.h $(DESTDIR)$(includedir)/scif.h
-	$(INSTALL_d) $(DESTDIR)$(man3dir)
-	$(INSTALL_d) $(DESTDIR)$(man9dir)
-	$(INSTALL_f) $(UMANDIR)/*.3 $(DESTDIR)$(man3dir)
-	$(INSTALL_f) $(KMANDIR)/*.9 $(DESTDIR)$(man9dir)
 
 install-pdf:
 	@echo install PDF...
